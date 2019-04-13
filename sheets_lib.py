@@ -8,6 +8,8 @@ from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 import datetime
 
+from merge_lib import merge_overlapping
+
 import pandas as pd
 import numpy as np
 from oauth2client.service_account import ServiceAccountCredentials
@@ -23,6 +25,7 @@ if os.environ.get('socks_proxy'):
 
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
+
 def get_credentials():
     """Gets valid user credentials from storage.
 
@@ -36,7 +39,8 @@ def get_credentials():
     path = os.path.expanduser('~/.credentials/google_sheets_api.json')
 
     if os.path.exists(path):
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(path, SCOPES)
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            path, SCOPES)
     else:
         print('File ~/.credentials/google_sheets_api.json not found')
         exit(1)
@@ -49,7 +53,8 @@ def get_service():
 
     http = credentials.authorize(httplib2.Http())
     discovery_url = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
-    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discovery_url, cache_discovery=False)
+    service = discovery.build(
+        'sheets', 'v4', http=http, discoveryServiceUrl=discovery_url, cache_discovery=False)
     return service
 
 
@@ -61,10 +66,6 @@ def clear(spreadsheet_id, sheet_name):
     # use A:Z to clear all the cells
     service.spreadsheets().values().clear(
         spreadsheetId=spreadsheet_id, range="'%s'!A:Z" % sheet_name, body={}).execute()
-
-
-
-
 
 
 def hyperlink(href, text):
@@ -87,7 +88,8 @@ class Sheet:
     def __init__(self, doc_id):
         self.doc_id = doc_id
         self.service = get_service()
-        self.sheet_metadata = self.service.spreadsheets().get(spreadsheetId=self.doc_id).execute()
+        self.sheet_metadata = self.service.spreadsheets().get(
+            spreadsheetId=self.doc_id).execute()
 
     def copy_to(self, title, destination_doc_id):
         """
@@ -101,12 +103,13 @@ class Sheet:
         sheet_id = self.get_sheet_id(title)
 
         request = self.service.spreadsheets().sheets().copyTo(spreadsheetId=self.doc_id, sheetId=sheet_id,
-                                                         body=copy_sheet_to_another_spreadsheet_request_body)
+                                                              body=copy_sheet_to_another_spreadsheet_request_body)
         request.execute()
 
     def load(self, title):
         # clear this sheet first
-        resp = self.service.spreadsheets().values().get(spreadsheetId=self.doc_id, range="'%s'" % title).execute()
+        resp = self.service.spreadsheets().values().get(
+            spreadsheetId=self.doc_id, range="'%s'" % title).execute()
 
         if 'values' in resp:
             values = resp['values']
@@ -127,7 +130,6 @@ class Sheet:
             header = adjusted_content[0]
             content = adjusted_content[1:]
             df = pd.DataFrame(content, columns=header)
-
 
             return df
         else:
@@ -151,9 +153,9 @@ class Sheet:
 
     def get_all_values(self, title, from_cell, to_cell):
         request = self.service.spreadsheets().values().get(
-             spreadsheetId=self.doc_id,
-             range="'%s'!%s:%s" % (title, from_cell, to_cell),
-             valueRenderOption="UNFORMATTED_VALUE")
+            spreadsheetId=self.doc_id,
+            range="'%s'!%s:%s" % (title, from_cell, to_cell),
+            valueRenderOption="UNFORMATTED_VALUE")
         response = request.execute()
         return response.get('values', None)
 
@@ -242,7 +244,8 @@ class Sheet:
                 value = df[column].iloc[i]
                 if isinstance(value, pd.tslib.Timestamp) or isinstance(value, datetime.date):
                     print('Convert column %s into string' % column)
-                    df[column] = pd.to_datetime(df[column]).dt.strftime('%Y-%m-%d').str.replace('NaT', '')
+                    df[column] = pd.to_datetime(df[column]).dt.strftime(
+                        '%Y-%m-%d').str.replace('NaT', '')
                     break
 
         headers = [df.columns.tolist()]
@@ -259,7 +262,6 @@ class Sheet:
             'valueInputOption': 'USER_ENTERED',
             'data': data
         }
-
 
         # clear this sheet first
         self.service.spreadsheets().values().clear(
@@ -291,7 +293,6 @@ class Sheet:
 
         print('Google Sheet [%s] updated' % title)
 
-   
     def upsert(self, title, df):
         # TODO this would be nice to have, add the sheet if it doesnt' exist
         try:
@@ -304,18 +305,17 @@ class Sheet:
         # TODO this not working yet
 
         self.service.spreadsheets().batchUpdate(
-            spreadsheetId=self.doc_id, body = {
+            spreadsheetId=self.doc_id, body={
                 'requests': [
-                   {
-                   'addSheet': {
-                       'properties': { 
-                           'title': title,
-                        },
+                    {
+                        'addSheet': {
+                            'properties': {
+                                'title': title,
+                            },
+                        }
                     }
-                  }
-                 ]
-             }).execute()
-
+                ]
+            }).execute()
 
     def format_as_currency(self, title, column_index):
         sheet_id = self.get_sheet_id(title)
@@ -425,12 +425,14 @@ class Sheet:
 
             if keys_available:
                 # select non-blank rows
-                manually_confirmed = manually_confirmed[manually_confirmed[columns].any(axis=1)]
+                manually_confirmed = manually_confirmed[manually_confirmed[columns].any(
+                    axis=1)]
 
                 # merge with new_sheet_df
                 new_sheet_with_preserved_values = merge_overlapping(new_sheet_df,
-                                               manually_confirmed[keys + columns], on=keys, how='left')
-                new_sheet_with_preserved_values.drop('_merge', axis=1, inplace=True)
+                                                                    manually_confirmed[keys + columns], on=keys, how='left')
+                new_sheet_with_preserved_values.drop(
+                    '_merge', axis=1, inplace=True)
             else:
                 new_sheet_with_preserved_values = new_sheet_df
 
@@ -451,7 +453,8 @@ class Sheet:
         manually_confirmed = self.load(title)
         manually_confirmed = manually_confirmed[manually_confirmed['action'] == 'confirmed']
 
-        print('%s manually confirmed rows in %s' % (len(manually_confirmed), title))
+        print('%s manually confirmed rows in %s' %
+              (len(manually_confirmed), title))
 
         if len(manually_confirmed) > 0:
 
@@ -460,7 +463,8 @@ class Sheet:
                 df[k] = num_to_str(df[k])
                 manually_confirmed[k] = num_to_str(manually_confirmed[k])
 
-            df = merge_overlapping(df, manually_confirmed[keys], on=keys, unique=False, how='left')
+            df = merge_overlapping(
+                df, manually_confirmed[keys], on=keys, unique=False, how='left')
 
             # select merged rows
             df = df[df['_merge'] == 'both']
@@ -485,7 +489,8 @@ class Sheet:
 
         if len(matching_rows) == 1:
 
-            row_index = df[df.iloc[:, 0].str.lower() == row_label.lower()].index[0]
+            row_index = df[df.iloc[:, 0].str.lower() ==
+                           row_label.lower()].index[0]
 
             # plus one because we skiped header
             row_index += 1
@@ -497,7 +502,8 @@ class Sheet:
             return row_index
 
         else:
-            print('%d rows match the row label %s, please check' % (len(matching_rows), row_label))
+            print('%d rows match the row label %s, please check' %
+                  (len(matching_rows), row_label))
             exit(1)
 
     def locate_cell(self, title, row_label, column_label):
@@ -507,10 +513,10 @@ class Sheet:
         """
 
         # need to update the code when we had more than 26 columns
-        column = string.ascii_uppercase[self.get_column_index(title, column_label)]
+        column = string.ascii_uppercase[self.get_column_index(
+            title, column_label)]
 
         # +1 because A1 notation starts from 1 and google api (get_row_index) starts from 0
         row = self.get_row_index(title, row_label) + 1
 
         return '%s%s' % (column, row)
-

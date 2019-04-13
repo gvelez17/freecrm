@@ -22,7 +22,8 @@ sheet = Sheet(CONTACT_SHEET)
 # Customize here for your purposes
 
 cw = sheet.get_as_dataframe('CivicWriters', 'A1', 'D200')
-cdf = df[df.subject.str.lower().str.contains(r'someone wants') | df.subject.str.lower().str.contains(r'civic writers') | df.subject.str.lower().str.contains(r'write for democracy')]
+cdf = df[df.subject.str.lower().str.contains(r'someone wants') | df.subject.str.lower(
+).str.contains(r'civic writers') | df.subject.str.lower().str.contains(r'write for democracy')]
 mdf = merge_overlapping(cw, cdf, on=['email'], how='outer')
 #mdf = pd.merge(cw, cdf, on=['email'], how='outer')
 sheet.upload('CivicWriters', mdf)
