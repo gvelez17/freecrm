@@ -15,3 +15,8 @@ RUN pip install -r requirements.txt
 
 # commands are run from docker-compose.yml
 ADD ./ /cookin/
+
+ENV GMAIL_USERNAME=
+ENV GMAIL_PASSWORD=
+ENV CONTACT_SHEET=
+ENV CONTACT_SHEET_SPECIFIC=
