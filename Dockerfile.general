@@ -1,0 +1,17 @@
+FROM python:3.6.7-alpine
+
+ENV PYTHONUNBUFFERED 1
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev 
+RUN apk add build-base py-pip bash vim linux-headers
+ENV LIBRARY_PATH=/lib:/usr/lib:$LIBRARY_PATH
+
+RUN mkdir /freecrm
+WORKDIR /freecrm
+ADD requirements.txt /freecrm/
+
+#RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# commands are run from docker-compose.yml
+ADD ./ /cookin/
