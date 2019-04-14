@@ -20,16 +20,24 @@ def log_contacts(folder, sent=False):
         try:
             envelope = data[b'ENVELOPE']
             if sent:
-                name = envelope.to[0].name or ''
+                name = envelope.to[0].name or b''
                 email = "%s@%s" % (envelope.to[0].mailbox, envelope.to[0].host)
             else:
                 from_obj = envelope.reply_to[0] or envelope.from_[0]
-                name = from_obj.name or ''
+                name = from_obj.name or b''
 #                        if name == 'Volunteermatch':
 #                            import pdb; pdb.set_trace()
-                email = "%s@%s" % (from_obj.mailbox, from_obj.host)
-            subject = envelope.subject
-            subject = subject.replace(b'\t', b' ')
+                email = "%s@%s" % (from_obj.mailbox.decode(), from_obj.host.decode())
+            subject = envelope.subject or b''
+            try:
+                subject = subject.decode()
+            except AttributeError:
+                pass
+            subject = subject.replace('\t', ' ')
+            try:
+                name = name.decode()
+            except AttributeError:
+                pass
             with open(CONTACTS_FILE, 'a') as f:
                 f.write("%s\t%s\t%s\n" % (name, email, subject))
 
