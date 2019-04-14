@@ -20,5 +20,4 @@ sheet = Sheet(CONTACT_SHEET)
 
 sheet.upload('raw', df)
 
-
-pdb.set_trace()
+print("Visit https://docs.google.com/spreadsheets/d/%s" % CONTACT_SHEET)

@@ -29,3 +29,5 @@ mdf = merge_overlapping(cw, cdf, on=['email'], how='outer')
 sheet.upload('CivicWriters', mdf)
 
 ##############################################################################
+
+print("Visit https://docs.google.com/spreadsheets/d/%s" % CONTACT_SHEET)
