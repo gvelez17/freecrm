@@ -36,7 +36,7 @@ def get_credentials():
         Credentials, the obtained credential.
     """
 
-    path = os.path.expanduser('~/.credentials/google_sheets_api.json')
+    path = os.path.expanduser('.credentials_google_sheets_api.json')
 
     if os.path.exists(path):
         credentials = ServiceAccountCredentials.from_json_keyfile_name(

@@ -1,0 +1,2 @@
+# lightweight requirements here so we can change without reinstalling pandas
+imapclient
