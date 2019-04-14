@@ -242,7 +242,7 @@ class Sheet:
 
             for i in range(len(df)):
                 value = df[column].iloc[i]
-                if isinstance(value, pd.tslib.Timestamp) or isinstance(value, datetime.date):
+                if isinstance(value, datetime.date):
                     print('Convert column %s into string' % column)
                     df[column] = pd.to_datetime(df[column]).dt.strftime(
                         '%Y-%m-%d').str.replace('NaT', '')

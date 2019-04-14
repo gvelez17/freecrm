@@ -29,11 +29,11 @@ def log_contacts(folder, sent=False):
 #                            import pdb; pdb.set_trace()
                 email = "%s@%s" % (from_obj.mailbox, from_obj.host)
             subject = envelope.subject
-            subject = subject.replace('\t', ' ')
+            subject = subject.replace(b'\t', b' ')
             with open(CONTACTS_FILE, 'a') as f:
                 f.write("%s\t%s\t%s\n" % (name, email, subject))
 
-        except Exception as e:
+        except AttributeError as e:
             print("Error: " + str(e))
             pass
 

@@ -41,7 +41,7 @@ def merge_overlapping(df1, df2, how='outer', on=[], prefer_right=[], label=''):
         return df1, df1, df1
     #
 
-    df = df1.merge(df2, how, on=on, indicator=True)
+    df = df1.merge(df2, how, on=on, indicator=False)
 
     for col in shared_keys:
         try:
